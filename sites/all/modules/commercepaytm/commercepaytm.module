@@ -1,0 +1,382 @@
+<?php
+include('encdec_paytm.php');
+
+
+/**
+ * @file
+ * Administration forms form payment method
+ */
+function paytm_settings_form($settings = NULL) {
+  $form = array();
+  $settings = (array) $settings + array(
+    'merchantIdentifier' => '',
+    'secret_key' => '',
+	//'gateway_url' => '',
+	'industry_type' => '',
+	'channel_id' => '',
+	'website' => '',
+	'mode' => '',
+	'callback_mode' => '',
+  );
+  $form['merchantIdentifier'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Merchant id'),
+    '#default_value' => $settings['merchantIdentifier'],
+  );
+   $form['secret_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Merchant Key'),
+    '#default_value' => $settings['secret_key'],
+  );
+  /*$form['gateway_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gateway URL'),
+    '#default_value' => $settings['gateway_url'],
+  );*/
+   $form['industry_type'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Industry Type'),
+    '#default_value' => $settings['industry_type'],
+  );
+   $form['channel_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Channel ID'),
+    '#default_value' => $settings['channel_id'],
+  );
+   $form['website'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Web Site Name'),
+    '#default_value' => $settings['website'],
+  );
+  $form['mode'] = array(
+    '#title' => t('Mode of transaction'),
+    '#default_value' => $settings['mode'],
+	'#type' => 'select',	
+	'#options' => array(t('Test'), t('Live')),
+  );
+  $form['callback_mode'] = array(
+	'#title' => t('Enable Callback URL'),
+	'#type' => 'select',	
+	'#default_value' => $settings['callback_mode'],
+	'#options' => array(t('--- SELECT ---'), t('Yes'), t('No')),
+  );
+  return $form;
+}
+// register payment method
+function commercepaytm_commerce_payment_method_info() {
+  $payment_methods = array();
+  $payment_methods['paytm'] = array(
+    'title' => t("paytm"),
+    'display_title' => "paytm",
+    'short_title' => 'paytm',
+    'description' => t("Payment method for paytm"),
+    'terminal' => FALSE,
+    'offsite' => TRUE,
+    'offsite_autoredirect' => TRUE,
+  );
+  return $payment_methods;
+}
+
+
+// Ask for paytm redirect form
+function paytm_redirect_form($form, &$form_state, $order, $payment_method) {
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  // Get financial info
+  if($wrapper->commerce_customer_billing->commerce_customer_address->value()){
+$order_address = $wrapper->commerce_customer_billing->commerce_customer_address->value();
+}
+
+$wrapper1 = entity_metadata_wrapper('field_data_field_phone_number', $order);
+//if($wrapper->commerce_customer_billing-> field_phone_number -> value())
+//{
+$order_address=$wrapper->commerce_customer_billing->commerce_customer_address->value();
+//}
+
+  $currency_code = $wrapper->commerce_order_total->currency_code->value();
+  $amount = (int) ($wrapper->commerce_order_total->amount->value()/100);
+  $returnUrl = url('checkout/' . $order->order_id . '/payment/return/' . $order->data['payment_redirect_key'], array('absolute' => TRUE));
+  $merchantIdentifier = $payment_method['settings']['merchantIdentifier'];
+  //$gateway_url = $payment_method['settings']['gateway_url'];
+  $industry_type = $payment_method['settings']['industry_type'];
+  $channel_id = $payment_method['settings']['channel_id'];
+  $website = $payment_method['settings']['website'];
+  $mode = $payment_method['settings']['mode'];
+  $callback_mode = $payment_method['settings']['callback_mode'];
+  $orderId = $order->order_id;
+  $buyerEmail = $wrapper->mail->value();
+  $txnDate=date('Y-m-d H:i:s');
+  $buyerFirstName =$order_address['first_name'];
+  $buyerLastName =$order_address['last_name'];
+  $buyerAddress = $order_address['thoroughfare'];
+  $buyerCity = $order_address['locality'];
+  $buyerState = $order_address['administrative_area'];
+  $buyerCountry = $order_address['country'];
+  $buyerPincode = $order_address['postal_code'];
+  //$buyerPhoneNumber = $wrapper->commerce_customer_billing->field_phone_number -> value() ; //add a new field named "phone number" name its machine name as "field_phone_number" at checkout page. 
+  $txnType = '1';
+  $ptPayOption = '1';
+  $currency = 'INR';
+	$purpose = '1';
+	$productDescription = 'paytm Subscription fee';
+	//$product1Description =  '';
+	//$product2Description = '';
+	//$product3Description = '';
+	//$product4Description = '';
+	//$ShipToAddress = "";
+	//$ShipToCity = "";
+	//$ShipToState = "";
+	//$ShipToCountry = "";
+	//$ShipToPincode = "";
+	//$ShipToPhoneNumber = "";
+	//$ShipToFirstname = "";
+	//$ShipToLastname = "";
+    $form['MID'] = array(
+    '#type' => 'hidden',
+    '#value' => $merchantIdentifier,
+    );
+    $form['ORDER_ID'] = array(
+    '#type' => 'hidden',
+    '#value' => $orderId,
+    );
+     /*$form['GATEWAY_URL'] = array(
+    '#type' => 'hidden',
+    '#value' => $gateway_url,
+    );*/
+	
+	$form['MODE'] = array(
+    '#type' => 'hidden',
+    '#value' => $mode,
+    );
+	
+	$form['CALLBACK_MODE'] = array(
+    '#type' => 'hidden',
+    '#value' => $callback_mode,
+    );
+    
+     $form['WEBSITE'] = array(
+    '#type' => 'hidden',
+    '#value' => $website,
+    );
+     $form['INDUSTRY_TYPE_ID'] = array(
+    '#type' => 'hidden',
+    '#value' => $industry_type,
+    );
+     $form['CHANNEL_ID'] = array(
+    '#type' => 'hidden',
+    '#value' => $channel_id,
+    );
+    $form['CUST_ID'] = array(
+    '#type' => 'hidden',
+    '#value' => $buyerFirstName ,
+    );
+    $form['TXN_AMOUNT'] = array(
+    '#type' => 'hidden',
+    '#value' => $amount,
+    );
+    $form['CALLBACK_URL'] = array(
+    '#type' => 'hidden',
+    '#value' => $returnUrl,
+    );
+    $form['txnDate'] = array(
+    '#type' => 'hidden',
+    '#value' => $txnDate,
+    );
+    $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  $module_path = drupal_get_path('module','commercepaytm');
+	$form['#action']=url($module_path.'/posttopaytm.php');
+  return $form;
+}
+
+
+
+/**
+ * Implements hook_redirect_form_validate().
+ */
+
+// validate payment
+function paytm_redirect_form_validate($order, $payment_method) {
+  $orderId =  $_POST['ORDERID'];
+  $responseCode = $_POST['RESPCODE'];
+	$responseDescription = $_POST['RESPMSG'];
+	$recd_checksum = $_POST['CHECKSUMHASH'];
+	$secret_key = $payment_method['settings']['secret_key'];
+	$merchant_id = $payment_method['settings']['merchantIdentifier'];
+	$mode = $payment_method['settings']['mode'];
+	//$all = getAllParams();
+	$all   = $_POST;
+	$bool = false;
+	//$bool = verifyChecksum($recd_checksum, $all, $secret_key);
+	$bool = verifychecksum_e( $all, $secret_key, $recd_checksum);
+  $message = t('Security error ip Address was: @ip', array('@ip' => ip_address()));
+  if ( $bool == TRUE && $responseCode == "01" ) {
+
+    // Create an array having all required parameters for status query.
+    $requestParamList = array("MID" => $merchant_id , "ORDERID" => $_POST['ORDERID']);
+
+    // Call the PG's getTxnStatus() function for verifying the transaction status.
+
+    if($mode=="1")
+    {
+      $check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/TXNSTATUS';
+    }
+    else
+    {
+      $check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/TXNSTATUS';
+    }
+    $responseParamList = callAPI($check_status_url, $requestParamList);
+    paytm_response($requestParamList,$_POST,$order,$payment_method,$bool);
+  }
+ else{
+   paytm_response(array(),$_POST,$order,$payment_method,$bool);
+ }
+}
+/**
+ * Payment method response.
+ *
+ */
+function paytm_response($response,$other_details,$order,$payment_method,$isvalidchecksum) {
+  global $base_url;
+  $redirection_url = $base_url;
+  if ($isvalidchecksum == TRUE) {
+    $payment_mode = "PAYTM";
+    if ($other_details["STATUS"] == "TXN_SUCCESS") {
+      $order = commerce_order_load($other_details['ORDERID']);
+      $timestamp = strtotime($other_details['TXNDATE']);
+      if ($other_details['TXNAMOUNT'] == $order->commerce_order_total[LANGUAGE_NONE][0]['amount'] / 100 ) {
+        commerce_paytm_save_transaction($other_details['ORDERID'],$other_details['TXNAMOUNT'],$other_details['RESPMSG'],$other_details,$payment_mode);
+        $order->field_order_placement_time[LANGUAGE_NONE][0]['value'] = time();
+        commerce_order_save($order);
+        commerce_order_status_update($order, 'checkout_complete', $skip_save = FALSE, $revision = NULL, $log = '');
+        $payment_method = $order->data['payment_method'];
+        payment_transaction($payment_method, $order, check_plain($other_details['TXNAMOUNT']), check_plain($other_details['TXNID']), $other_details['BANKTXNID']);
+        header('Location:' . $redirection_url . '/checkout/' . $other_details['ORDERID'] . '/complete');
+      }
+      else {
+        commerce_paytm_save_transaction($other_details['ORDERID'],$other_details['TXNAMOUNT'],$other_details['RESPMSG'],$other_details,$payment_mode);
+        //return drupal_set_message(t('Security Error. Illegal access detected. We will store your IP address.');
+        header('Location:' . $redirection_url . '/unsuccessfull_transaction');
+      }
+    }
+    elseif ($other_details["STATUS"] == "TXN_FAILURE") {
+      drupal_set_message(t("Payment was declined, Please try again!"), 'error');
+      $order = commerce_order_load($other_details['ORDERID']);
+      commerce_order_status_update($order, 'checkout_checkout', $skip_save = FALSE, $revision = NULL, $log = '');
+      header('Location:' . $redirection_url . '/checkout/' . $other_details['ORDERID'] . '?repay=' . md5($other_details['ORDERID']));
+    }
+
+  }
+  else {
+    commerce_paytm_save_transaction($other_details['ORDERID'],$other_details['TXNAMOUNT'],$other_details['RESPMSG'],$other_details,$payment_method);
+    header('Location:' . $redirection_url . '/unsuccessfull_transaction');
+  }
+}
+
+function payment_transaction($payment_method, $order, $amount, $transaction_id = 0, $payment_id) {
+  $transaction = commerce_payment_transaction_new($payment_method, $order->order_id);
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $currency = $wrapper->commerce_order_total->currency_code->value();
+  $transaction->amount = $amount * 100;
+  $transaction->currency_code = 'INR';
+  $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+  $transaction->message = t('Payment received at') . ' ' . date("d-m-Y H:i:s", REQUEST_TIME);
+  $transaction->remote_status = t('Success');
+  $transaction->remote_id = $payment_id;
+  $transaction->payment_method = $payment_method;
+  $transaction->instance_id = $transaction_id;
+  return commerce_payment_transaction_save($transaction);
+}
+
+function commerce_paytm_save_transaction($order_id,$amount,$response_msg,$response,$payment_mode){
+  $query = db_insert('paytm_payment_track');
+  $query->fields(array(
+    'order_id' => $order_id,
+    'amount' => $amount,
+    'result' => check_plain($response_msg),
+    'transaction_Id' => '0',
+    'timestamp' => time(),
+    'tamper_Flag' => '0',
+    'payment_Id' => '0',
+    'response' => serialize($response),
+  ));
+  $result = $query->execute();
+  return $result;
+}
+
+
+// helper functions.. 
+function _commerce_paytm_verify($payment_method) {
+  $secret_key = $payment_method['settings']['secret_key'];
+  $responseCode = $_POST['responseCode'];
+  $responseDescription = $_POST['responseDescription'];
+  $orderId =  $_POST['orderId'];
+  $checksum = $_POST['checksum'];
+  $all = getAllParams();
+  return verifyChecksum($checksum, $all, $secret_key);
+}
+
+
+
+function sanitizedURL($param) {
+		$pattern[0] = "%,%";
+	        $pattern[1] = "%\(%";
+       		$pattern[2] = "%\)%";
+	        $pattern[3] = "%\{%";
+	        $pattern[4] = "%\}%";
+	        $pattern[5] = "%<%";
+	        $pattern[6] = "%>%";
+	        $pattern[7] = "%`%";
+	        $pattern[8] = "%!%";
+	        $pattern[9] = "%\\$%";
+	        $pattern[10] = "%\%%";
+	        $pattern[11] = "%\^%";
+	        $pattern[12] = "%\+%";
+	        $pattern[13] = "%\|%";
+	        $pattern[14] = "%\\\%";
+	        $pattern[15] = "%'%";
+	        $pattern[16] = "%\"%";
+	        $pattern[17] = "%;%";
+	        $pattern[18] = "%~%";
+	        $pattern[19] = "%\[%";
+	        $pattern[20] = "%\]%";
+	        $pattern[21] = "%\*%";
+        	$sanitizedParam = preg_replace($pattern, "", $param);
+		return $sanitizedParam;
+	}
+
+function calculateChecksum($secret_key, $all) {
+		$hash = hash_hmac('sha256', $all , $secret_key);
+		$checksum = $hash;
+		return $checksum;
+	}
+
+function getAllParams() {
+		//ksort($_POST);
+		$all = '';
+		foreach($_POST as $key => $value)	{
+			if($key != 'checksum') {
+				$all .= "'";
+				if ($key == 'returnUrl') {
+					$all .= sanitizedURL($value);
+				} else {
+					$all .= sanitizedParam($value);
+				}
+				$all .= "'";
+			}
+		}
+		return $all;
+	}
+	
+function verifyChecksum($checksum, $all, $secret) {
+		$cal_checksum = calculateChecksum($secret, $all);
+		$bool = false;
+		if($checksum == $cal_checksum)	{
+			$bool = true;
+		}
+		
+		return $bool;
+	}
+
+?>

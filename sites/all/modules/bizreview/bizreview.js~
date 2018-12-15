@@ -1,0 +1,13 @@
+(function ($) {
+   
+Drupal.behaviors.bizreview = {
+    attach: function(context, settings){
+        $("#edit-commerce-node-checkout-product").change(function() {
+              alert('changed');
+            var selected_text = $("#edit-commerce-node-checkout-product option:selected").text();
+            $("#edit-field-commerce-node-checkout-val-und-0-value").val(selected_text).change();
+            }).change();
+        }};
+
+
+})(jQuery);

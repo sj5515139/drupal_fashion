@@ -1,0 +1,15 @@
+name = PDF Export
+description = Gives the ability to print as PDF any content.
+core = "7.x"
+package = "PDF"
+
+dependencies[] = libraries
+
+files[] = includes/PdfExportProcessorInterface.inc
+
+; Information added by Drupal.org packaging script on 2017-04-22
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "pdf_export"
+datestamp = "1492900747"
+

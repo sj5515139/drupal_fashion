@@ -1,0 +1,26 @@
+<?php
+
+/*
+ * Alter the listing form to enable Conditional Fields to work with Commerce Node Checkout
+ */
+/*function bizreview_hook_form_alter(&$form, &$form_state, $form_id) {
+  if($form_id == 'business_node_form') {
+  $module_path = drupal_get_path("module","bizreview");
+  $form['#attached']['js'] = array($module_path . '/bizreview.js');
+}
+}
+*/
+
+function bizreview_hook_form_alter(&$form, $form_state, $form_id) {
+var_dump($form);
+  if($form_id == 'business_node_form'){
+
+     $form['#after_build'][] = array('bizreview_after_build');
+   }
+}
+
+function bizreview_after_build($form, &$form_state) {
+  $path = drupal_get_path('module', 'bizreview');
+  drupal_add_js ("$path/bizreview.js");
+  return $form;
+}

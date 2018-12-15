@@ -1,0 +1,69 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the Commerce Availability module.
+ */
+
+define('COMMERCE_AVAILABILITY_S_CLASS_BLOCKED', 'cal-bl');
+
+/**
+ * Implements hooks_install().
+ *
+ * @link https://api.drupal.org/api/drupal/modules!system!system.api.
+ * php/function/hook_install/7
+ */
+function commerce_availability_install() {
+  module_load_include('inc', 'availability_calendar', 'availability_calendar');
+  $states = availability_calendar_get_states();
+  $found = FALSE;
+  $weight = 0;
+  foreach ($states as $state) {
+    if ($state['css_class'] == COMMERCE_AVAILABILITY_S_CLASS_BLOCKED) {
+      $found = TRUE;
+    }
+    else {
+      $weight = $state['weight'];
+    }
+  }
+  if (!$found) {
+    $states[] = array(
+      'css_class' => COMMERCE_AVAILABILITY_S_CLASS_BLOCKED,
+      'label' => 'Blocked',
+      'weight' => $weight + 1,
+      'is_available' => 0,
+    );
+    availability_calendar_update_states($states);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * @link https://api.drupal.org/api/drupal/modules!system!system.api.
+ * php/function/hook_uninstall/7
+ */
+function commerce_availability_uninstall() {
+  $variables = array(
+    'commerce_availability_type_p',
+    'commerce_availability_type_l',
+    'commerce_availability_f_name_p',
+    'commerce_availability_f_name_l',
+    'commerce_availability_n_days_before',
+    'commerce_availability_n_days_after',
+    'commerce_availability_n_initial_buffer',
+    'commerce_availability_n_day_off',
+    'commerce_availability_d_official_holidays',
+    'commerce_availability_d_bank_holidays',
+  );
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+  module_load_include('inc', 'availability_calendar', 'availability_calendar');
+  $states = availability_calendar_get_states();
+  foreach ($states as $inx => $state) {
+    if ($state['css_class'] == COMMERCE_AVAILABILITY_S_CLASS_BLOCKED) {
+      unset($states[$inx]);
+    }
+  }
+  availability_calendar_update_states($states);
+}

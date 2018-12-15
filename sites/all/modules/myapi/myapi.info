@@ -1,0 +1,3 @@
+name = Custom Api Module
+description = Create Custom Api For the Drupal Site
+core = 7.x

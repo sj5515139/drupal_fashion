@@ -1,0 +1,657 @@
+<?php
+/**
+ * @file
+ * This file contains hooks and other functions.
+ */
+
+define('COMMERCE_AVAILABILITY_TYPE_P', variable_get('commerce_availability_type_p', ''));
+define('COMMERCE_AVAILABILITY_TYPE_L', variable_get('commerce_availability_type_l', ''));
+define('COMMERCE_AVAILABILITY_F_NAME_P', variable_get('commerce_availability_f_name_p', ''));
+define('COMMERCE_AVAILABILITY_F_NAME_L', variable_get('commerce_availability_f_name_l', ''));
+
+define('COMMERCE_AVAILABILITY_DAYS_BEFORE', variable_get('commerce_availability_n_days_before', 2));
+define('COMMERCE_AVAILABILITY_DAYS_AFTER', variable_get('commerce_availability_n_days_after', 2));
+define('COMMERCE_AVAILABILITY_MONTHS_LIMIT', variable_get('commerce_availability_n_months_limit', 6));
+define('COMMERCE_AVAILABILITY_INITIAL_BUFFER', variable_get('commerce_availability_n_initial_buffer', 3));
+define('COMMERCE_AVAILABILITY_DAY_OFF', variable_get('commerce_availability_n_day_off', 0));
+define('COMMERCE_AVAILABILITY_OFICIAL_HOLIDAYS', variable_get('commerce_availability_d_official_holidays', ''));
+define('COMMERCE_AVAILABILITY_BANK_HOLIDAYS', variable_get('commerce_availability_d_bank_holidays', ''));
+
+commerce_availability_define_states();
+
+/**
+ * Gets calendar states and define associate constants.
+ */
+function commerce_availability_define_states() {
+  module_load_include('inc', 'availability_calendar', 'availability_calendar');
+  $states = availability_calendar_get_states();
+  foreach ($states as $state) {
+    define('COMMERCE_AVAILABILITY_S_' . str_replace('-', '_', strtoupper($state['css_class'])), $state['sid']);
+  }
+}
+
+/**
+ * Implements hook_menu().
+ *
+ * @link https://api.drupal.org/api/drupal/modules--system--system.api.php
+ * /function/hook_menu/7
+ */
+function commerce_availability_menu() {
+  $items['commerce_availability_ajax'] = array(
+    'title' => '',
+    'description' => '',
+    'page callback' => 'commerce_availability_ajax_process',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/system/commerce-availability'] = array(
+    'title' => 'Commerce availability settings',
+    'description' => 'Manage configuration variables',
+    'page arguments' => array('commerce_availability_admin'),
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer availability'),
+    'file' => 'commerce_availability.admin.inc',
+    'file path' => drupal_get_path('module', 'commerce_availability'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/config/system/commerce-availability/settings'] = array(
+    'title' => 'Commerce availability settings',
+    'description' => 'Manage configuration variables',
+    'access arguments' => array('administer availability'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  return $items;
+}
+
+/**
+ * Gets the availability calendar id for a given product.
+ *
+ * @param object|int $product
+ *   A product type or the product id.
+ */
+function commerce_availability_get_calendar_id($product) {
+  if (!is_object($product)) {
+    $product = commerce_product_load($product);
+  }
+  $calendar = field_get_items('commerce_product', $product, COMMERCE_AVAILABILITY_F_NAME_P);
+  $cid = !empty($calendar[0]['cid']) ? $calendar[0]['cid'] : 0;
+  return $cid;
+}
+
+/**
+ * Calculates days included in initial buffer.
+ *
+ * @param array $availability
+ *   An array with unavailability days.
+ * @param int $buffer
+ *   Number of unavailables days from today.
+ */
+function commerce_availability_initial_buffer(array &$availability, $buffer) {
+  $day = new DateTime(date('Y-m-d'));
+  for ($i = 0; $i < $buffer; $i++) {
+    $day_string = $day->format('Y-m-d');
+    if (empty($availability[$day_string])) {
+      $availability[$day_string] = COMMERCE_AVAILABILITY_S_CAL_NC;
+    }
+    $day->modify('+1 day');
+  }
+  return $availability;
+}
+
+/**
+ * Clear days included in initial buffer before filling gaps.
+ *
+ * @param array $availability
+ *   An array with unavailability days.
+ * @param int $buffer
+ *   Number of unavailables days from today.
+ */
+function commerce_availability_clear_buffer(array &$availability, $buffer) {
+  $day = new DateTime(date('Y-m-d'));
+  for ($i = 0; $i < $buffer; $i++) {
+    $day_string = $day->format('Y-m-d');
+    if (!empty($availability[$day_string])) {
+      unset($availability[$day_string]);
+    }
+    $day->modify('+1 day');
+  }
+  return $availability;
+}
+
+/**
+ * Adds contiguous unavailable days for a given buffer.
+ *
+ * @param array $dis_days
+ *   An array with unavailability days.
+ * @param int $day
+ *   Day to check.
+ * @param int $buffer
+ *   Number of unavailables days from today.
+ */
+function commerce_availability_check_gap(array &$dis_days, $day, $buffer) {
+  $gaps = array();
+  $sign = min(1, max(-1, $buffer));
+  $check_day = clone $day;
+  $day_string = $check_day->format('Y-m-d');
+  for ($i = 0; $i < abs($buffer); $i++) {
+    $check_day->modify($sign . ' day');
+    $timestamp = $check_day->getTimestamp();
+    if (commerce_availability_is_unavailable_day($dis_days, $timestamp) && $i == 0) {
+      $i--;
+    }
+    $day_string = $check_day->format('Y-m-d');
+    $gaps[$day_string] = COMMERCE_AVAILABILITY_S_CAL_NC;
+  }
+  return $gaps;
+}
+
+/**
+ * Adds total contiguous unavailable days.
+ *
+ * @param array $availability
+ *   An array with unavailability days.
+ */
+function commerce_availability_fill_gaps(array &$availability) {
+  $gaps = array();
+  $dis_days = commerce_availability_get_unavailable_days();
+  foreach ($availability as $date_string => $status) {
+    $day = new DateTime($date_string);
+    $gaps_before = commerce_availability_check_gap($dis_days, $day, -COMMERCE_AVAILABILITY_DAYS_BEFORE);
+    $gaps_after = commerce_availability_check_gap($dis_days, $day, COMMERCE_AVAILABILITY_DAYS_AFTER);
+    $gaps = array_merge($gaps, $gaps_before, $gaps_after);
+  }
+  return array_merge($availability, $gaps);
+}
+
+/**
+ * Callback function to render unavailable days in popup datetime field.
+ */
+function commerce_availability_ajax_process() {
+  $pid = isset($_POST['pid']) ? $_POST['pid'] : 0;
+  $cid = commerce_availability_get_calendar_id($pid);
+  $availability = array();
+  if (!empty($pid) && !empty($cid)) {
+    $from = new DateTime(date('Y-m-d'));
+    $to = new DateTime(date('Y-m-d'));
+    $to->modify('+' . COMMERCE_AVAILABILITY_MONTHS_LIMIT . ' months');
+    module_load_include('inc', 'availability_calendar', 'availability_calendar');
+    $availability = availability_calendar_get_availability($cid, $from, $to);
+    $reset_values = array(COMMERCE_AVAILABILITY_S_CAL_AV);
+    $availability = array_diff($availability, $reset_values);
+    $availability = commerce_availability_clear_buffer($availability, COMMERCE_AVAILABILITY_INITIAL_BUFFER);
+    $availability = commerce_availability_fill_gaps($availability);
+    $availability = commerce_availability_initial_buffer($availability, COMMERCE_AVAILABILITY_INITIAL_BUFFER);
+  }
+  echo json_encode($availability);
+}
+
+/**
+ * Function to reuse the addition of js.
+ */
+function commerce_availability_add_js() {
+  drupal_add_js(drupal_get_path('module', 'commerce_availability') . '/js/commerce_availability.js');
+  $settings = array(
+    'date_field' => str_replace('_', '-', COMMERCE_AVAILABILITY_F_NAME_L),
+    'months_limit' => COMMERCE_AVAILABILITY_MONTHS_LIMIT,
+  );
+  drupal_add_js(array('commerce_availability' => $settings), 'setting');
+}
+
+/**
+ * Implements template_preprocess_node().
+ *
+ * @link https://api.drupal.org/api/drupal/modules--node--node.module
+ * /function/template_preprocess_node/7
+ */
+function commerce_availability_preprocess_node(&$variables) {
+  $types_p = unserialize(COMMERCE_AVAILABILITY_TYPE_P);
+  if (is_array($types_p) && in_array($variables['type'], $types_p)) {
+    commerce_availability_add_js();
+  }
+}
+
+/**
+ * Implements hook_field_attach_submit().
+ *
+ * @link https://api.drupal.org/api/drupal/modules--field--field.api.
+ * php/function/hook_field_attach_submit/7
+ */
+function commerce_availability_field_attach_submit($entity_type, $entity, $form, &$form_state) {
+  $types_p = unserialize(COMMERCE_AVAILABILITY_TYPE_P);
+  if (!empty($entity->type) && is_array($types_p) && in_array($entity->type, $types_p)) {
+    $calendar = field_get_items($entity_type, $entity, COMMERCE_AVAILABILITY_F_NAME_P);
+    $cid = !empty($calendar[0]['cid']) ? $calendar[0]['cid'] : 0;
+    $changes = !empty($calendar[0]['availability_changes']) ? $calendar[0]['availability_changes'] : '';
+    $arr_changes = preg_split('/\R/', $changes);
+    $arr_changes = array_unique($arr_changes);
+    if (!empty($arr_changes) && !empty($cid)) {
+      module_load_include('inc', 'availability_calendar', 'availability_calendar');
+      availability_calendar_update_calendar($cid);
+      $date_exp = '[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])';
+      foreach ($arr_changes as $change) {
+        $state = trim(preg_replace('/^state\:\s(\d+)\s.*$/', '\\1', $change, 1, $cstate));
+        $from = trim(preg_replace('/^.*from\:\s(' . $date_exp . ')\s.*$/', '\\1', $change, 1, $cfrom));
+        $to = trim(preg_replace('/^.*to\:\s(' . $date_exp . ')$/', '\\1', $change, 1, $cto));
+        if (!empty($cstate) && !empty($cfrom) && !empty($cto)) {
+          $from_date = new DateTime($from);
+          $to_date = new DateTime($to);
+          availability_calendar_update_availability($cid, $state, $from_date, $to_date, FALSE);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ *
+ * @link https://api.drupal.org/api/drupal/modules!system!system.api.php
+ * /function/hook_form_BASE_FORM_ID_alter/7
+ */
+function commerce_availability_form_commerce_cart_add_to_cart_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+  if (isset($form['product_id']['#value'])) {
+    $pid = $form['product_id']['#value'];
+    $order = commerce_cart_order_load($user->uid);
+    if (!empty($order) && !empty($pid)) {
+      $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+      if (!empty($order_wrapper->commerce_line_items)) {
+        foreach ($order_wrapper->commerce_line_items as $line_item_wrapper) {
+          $line_type = $line_item_wrapper->type->value();
+          $types_l = unserialize(COMMERCE_AVAILABILITY_TYPE_L);
+          if (is_array($types_l) && in_array($line_type, $types_l)) {
+            $pid_line = $line_item_wrapper->commerce_product->raw();
+            if ($pid == $pid_line) {
+              $form['submit']['#value'] = t('Already added to cart');
+              $form['submit']['#disabled'] = TRUE;
+              $form['submit']['#attributes'] = array('class' => array('added'));
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Check if a holiday.
+ *
+ * @param array $dis_days
+ *   Array with unavailable holidays.
+ * @param integer $timestamp
+ *   Timestamp of the date to check.
+ */
+function commerce_availability_is_unavailable_day(array &$dis_days, $timestamp) {
+  $dw = date("w", $timestamp);
+  $ddm = date('m-d', $timestamp);
+  $ddmy = date('Y-m-d', $timestamp);
+  if (in_array($ddm, $dis_days) || in_array($ddmy, $dis_days) || $dw == COMMERCE_AVAILABILITY_DAY_OFF) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Get holidays to consider it unavailables.
+ */
+function commerce_availability_get_unavailable_days() {
+  $dis_official_days = explode(',', COMMERCE_AVAILABILITY_OFICIAL_HOLIDAYS);
+  $dis_bank_days = explode(',', COMMERCE_AVAILABILITY_BANK_HOLIDAYS);
+  $dis_days = array_merge($dis_official_days, $dis_bank_days);
+  return array_filter($dis_days);
+}
+
+/**
+ * Check if first and last days on buffer are a holiday.
+ *
+ * @param int $buffer
+ *   Number of buffer days.
+ * @param array $dis_days
+ *   Array with unavailable holidays.
+ * @param integer $timestamp
+ *   Timestamp of the date to check.
+ */
+function commerce_availability_check_buffer($buffer, array &$dis_days, $timestamp) {
+  if ($buffer == 0) {
+    return $buffer;
+  }
+  $check_date = new DateTime();
+  $check_date->setTimestamp($timestamp);
+  $check_date = $check_date->modify($buffer . ' days');
+  $check_timestamp = $check_date->getTimestamp();
+  if (commerce_availability_is_unavailable_day($dis_days, $check_timestamp)) {
+    return commerce_availability_check_buffer(min(1, max(-1, $buffer)) * (abs($buffer) + 1), $dis_days, $check_timestamp);
+  }
+  else {
+    return $buffer;
+  }
+}
+
+/**
+ * Get total buffer days.
+ *
+ * @param integer $timestamp
+ *   Timestamp of the date to check.
+ */
+function commerce_availability_get_from_to($timestamp) {
+  $dis_days = commerce_availability_get_unavailable_days();
+  $days_before = commerce_availability_check_buffer(-(COMMERCE_AVAILABILITY_DAYS_BEFORE), $dis_days, $timestamp);
+  $days_after = commerce_availability_check_buffer(COMMERCE_AVAILABILITY_DAYS_AFTER, $dis_days, $timestamp);
+  $from = new DateTime(date('Y-m-d', $timestamp));
+  $from->modify($days_before . ' days');
+  $to = new DateTime(date('Y-m-d', $timestamp));
+  $to->modify($days_after . ' days');
+  return array($from, $to);
+}
+
+/**
+ * Changes availability calendar states.
+ *
+ * @param object $line_item_wrapper
+ *   Line item object wrapped.
+ */
+function commerce_availability_check_line_item(&$line_item_wrapper) {
+  $cid = 0;
+  $timestamp = NULL;
+  $line_type = $line_item_wrapper->type->value();
+  $types_l = unserialize(COMMERCE_AVAILABILITY_TYPE_L);
+  if (is_array($types_l) && in_array($line_type, $types_l)) {
+    $timestamp = $line_item_wrapper->{COMMERCE_AVAILABILITY_F_NAME_L}->value();
+    $pid = $line_item_wrapper->commerce_product->value();
+    $cid = commerce_availability_get_calendar_id($pid);
+  }
+  return array($cid, $timestamp);
+}
+
+/**
+ * Changes availability calendar states.
+ *
+ * @param int $cid
+ *   Product id with availability calendar to apply state changes.
+ * @param integer $timestamp
+ *   Timestamp for a event day.
+ * @param string $state
+ *   State to be apply.
+ */
+function commerce_availability_change_state($cid, $timestamp, $state) {
+  list($from, $to) = commerce_availability_get_from_to($timestamp);
+  module_load_include('inc', 'availability_calendar', 'availability_calendar');
+  availability_calendar_update_availability($cid, $state, $from, $to, TRUE);
+}
+
+/**
+ * Update calendar availability field states in all products of a given order.
+ *
+ * @param object $order
+ *   Order object to update.
+ * @param string $state
+ *   New state.
+ */
+function commerce_availability_update_states_order($order, $state) {
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  if (!empty($order_wrapper->commerce_line_items)) {
+    foreach ($order_wrapper->commerce_line_items as $line_item_wrapper) {
+      list($cid, $timestamp) = commerce_availability_check_line_item($line_item_wrapper);
+      if (!empty($cid) && !empty($timestamp)) {
+        commerce_availability_change_state($cid, $timestamp, $state);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_commerce_cart_product_add().
+ *
+ * @link http://drupalcontrib.org/api/drupal/contributions--commerce--modules--
+ * cart--commerce_cart.module/function/commerce_cart_add_to_cart_form_submit/7
+ */
+function commerce_availability_commerce_cart_product_add($order, $product, $quantity, $line_item) {
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+  list($cid, $timestamp) = commerce_availability_check_line_item($line_item_wrapper);
+  if (!empty($cid) && !empty($timestamp)) {
+    commerce_availability_change_state($cid, $timestamp, COMMERCE_AVAILABILITY_S_CAL_BL);
+  }
+}
+
+/**
+ * Implements hook_commerce_cart_product_remove().
+ *
+ * @link http://api.drupalcommerce.org/api/Drupal%20Commerce/sites!all!!
+ * modules!commerce!modules!cart!commerce_cart.api.php/function/
+ * hook_commerce_cart_product_remove/
+ */
+function commerce_availability_commerce_cart_product_remove($order, $product, $quantity, $line_item) {
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+  list($cid, $timestamp) = commerce_availability_check_line_item($line_item_wrapper);
+  if (!empty($cid) && !empty($timestamp)) {
+    commerce_availability_change_state($cid, $timestamp, COMMERCE_AVAILABILITY_S_CAL_AV);
+  }
+}
+
+/**
+ * Calculate availability states from a given statuses.
+ *
+ * @param string $status_previous
+ *   Status name of previous state.
+ * @param object $status_actual
+ *   Status name of state to save.
+ */
+function commerce_availability_commerce_get_from_to_availability_states($status_previous, $status_actual) {
+  $rel_order_availability = array(
+    'cart' => COMMERCE_AVAILABILITY_S_CAL_BL,
+    'checkout' => COMMERCE_AVAILABILITY_S_CAL_BL,
+    'canceled' => COMMERCE_AVAILABILITY_S_CAL_AV,
+    'pending' => COMMERCE_AVAILABILITY_S_CAL_OPT,
+    'completed' => COMMERCE_AVAILABILITY_S_CAL_NA,
+  );
+  $statuses = commerce_order_statuses();
+  $state_previous = !empty($statuses[$status_previous]['state']) ? $statuses[$status_previous]['state'] : 'canceled';
+  $state_actual = !empty($statuses[$status_actual]['state']) ? $statuses[$status_actual]['state'] : 'canceled';
+  $state_from = $rel_order_availability[$state_previous];
+  $state_to = $rel_order_availability[$state_actual];
+  return array($state_from, $state_to);
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * @link https://api.drupal.org/api/drupal/modules--system--system.api.php
+ * /function/hook_entity_update/7
+ */
+function commerce_availability_entity_update($entity, $type) {
+  if ($type == 'commerce_order') {
+    $status_actual = $entity->status;
+    $status_previous = !empty($entity->original->status) ? $entity->original->status : $status_actual;
+    if (!empty($status_previous)) {
+      list($state_from, $state_to) = commerce_availability_commerce_get_from_to_availability_states($status_previous, $status_actual);
+      if ($state_from != $state_to) {
+        commerce_availability_update_states_order($entity, $state_to);
+      }
+    }
+  }
+  elseif ($type == 'commerce_line_item') {
+    if (!empty($entity->editableviews_needs_save) && empty($entity->original->{COMMERCE_AVAILABILITY_F_NAME_L})) {
+      $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $entity);
+      list($cid, $timestamp) = commerce_availability_check_line_item($line_item_wrapper);
+      if (!empty($cid) && !empty($timestamp)) {
+        commerce_availability_change_state($cid, $timestamp, COMMERCE_AVAILABILITY_S_CAL_BL);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * @link https://api.drupal.org/api/drupal/modules--system--system.api.php
+ * /function/hook_entity_delete/7
+ */
+function commerce_availability_entity_delete($entity, $type) {
+  if ($type == 'commerce_line_item') {
+    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $entity);
+    list($cid, $timestamp) = commerce_availability_check_line_item($line_item_wrapper);
+    if (!empty($cid) && !empty($timestamp)) {
+      commerce_availability_change_state($cid, $timestamp, COMMERCE_AVAILABILITY_S_CAL_AV);
+    }
+  }
+}
+
+/**
+ * Implements hook_views_pre_execute().
+ *
+ * @link https://api.drupal.org/api/views/views.api.php/function/
+ * hook_views_pre_execute/7
+ * 'Commerce add to cart confirmation' : confirm_message_product_display
+ * 'Shopping cart form' : commerce_cart_form
+ * 'Shopping cart summary' : commerce_cart_summary
+ * 'Line items' : commerce_line_item_table
+ */
+function commerce_availability_views_pre_execute(&$view) {
+  if ($view->name == 'commerce_cart_form') {
+    $view->field['edit_quantity']->options['exclude'] = TRUE;
+  }
+  elseif ($view->name == 'confirm_message_product_display') {
+    $view->field['quantity']->options['exclude'] = TRUE;
+  }
+  elseif ($view->name == 'commerce_line_item_table') {
+    $path = current_path();
+    if (!strpos($path, 'admin_page')) {
+      commerce_availability_add_js();
+    }
+    else {
+      $view->field['field_availability_line_editable']->options['exclude'] = TRUE;
+      $view->field['field_availability_line']->options['exclude'] = FALSE;
+      $view->field['product_id']->options['exclude'] = TRUE;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @link https://api.drupal.org/api/drupal/modules--system--system.api.php
+ * /function/hook_form_alter/7
+ */
+function commerce_availability_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'commerce_order_ui_order_form') {
+    $is_new = empty($form_state['commerce_order']->is_new) ? FALSE : TRUE;
+    if ($is_new) {
+      $form['order_status']['status']['#default_value'] = 'offline';
+    }
+    $form['#validate'][] = 'commerce_availability_form_manage_order_validate';
+  }
+  elseif (!empty($form['#entity']) && strpos($form_id, 'node_form') > 0) {
+    $types_p = unserialize(COMMERCE_AVAILABILITY_TYPE_P);
+    if (is_array($types_p) && in_array($form['#entity']->type, $types_p)) {
+      $request_path = drupal_get_normal_path(request_uri());
+      if (strpos($request_path, 'ajax') === FALSE) {
+        $lang = $form['field_product']['#language'];
+        unset($form['field_product'][$lang]['form']['actions']);
+        if (!empty($form['#entity']->field_product)) {
+          $products = array_pop($form['#entity']->field_product);
+          foreach ($products as $product) {
+            $pid = $product['product_id'];
+            $product_obj = commerce_product_load($pid);
+            if (!empty($product_obj->{COMMERCE_AVAILABILITY_F_NAME_P})) {
+              $lang = key($product_obj->{COMMERCE_AVAILABILITY_F_NAME_P});
+              if (empty($product_obj->{COMMERCE_AVAILABILITY_F_NAME_P}[$lang][0]['cid'])) {
+                $cid = availability_calendar_create_calendar();
+                $product_obj->{COMMERCE_AVAILABILITY_F_NAME_P}[$lang][0]['cid'] = $cid;
+                commerce_product_save($product_obj);
+              }
+            }
+          }
+        }
+      }
+      else {
+        if (!empty($form['field_product'])) {
+          $lang = $form['field_product']['#language'];
+          if (!empty($form['field_product'][$lang]['form'])) {
+            if (!empty($form['field_product'][$lang]['form']['#entity']->is_new)) {
+              unset($form['field_product'][$lang]['form']['actions']);
+            }
+          }
+          elseif (is_array($form['field_product'][$lang]['entities'])) {
+            $entity_keys = array_keys($form['field_product'][$lang]['entities']);
+            foreach($entity_keys as $key) {
+              if (gettype($key) == 'integer' && !empty($form['field_product'][$lang]['entities'][$key]['form'])) {
+                unset($form['field_product'][$lang]['entities'][$key]['form']['actions']);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Check if exist products without associated event days.
+ *
+ * @param array $form
+ *   Nested array of form elements that comprise the form.
+ * @param array $form_state
+ *   A keyed array containing the current state of the form.
+ */
+function commerce_availability_form_manage_order_validate(array $form, array &$form_state) {
+  if (!empty($form_state['clicked_button']['#ajax'])) {
+    return;
+  }
+  $status = $form_state['values']['status'];
+  $status_forbidden = array('pending', 'processing', 'completed');
+  $line_items_defined = TRUE;
+  if (in_array($status, $status_forbidden)) {
+    $lang = $form['commerce_line_items']['#language'];
+    $line_items = $form['commerce_line_items'][$lang]['line_items'];
+    $line_types = unserialize(COMMERCE_AVAILABILITY_TYPE_L);
+    foreach ($line_items as $inx => $line_item) {
+      if (is_int($inx) && is_array($line_item) && !empty($line_item['line_item']['#value']->type)) {
+        $line_type = $line_item['line_item']['#value']->type;
+        if (is_array($line_types) && in_array($line_type, $line_types)) {
+          $remove = $form_state['values']['commerce_line_items'][$lang]['line_items'][$inx]['remove'];
+          if (!$remove && empty($line_item['line_item']['#value']->{COMMERCE_AVAILABILITY_F_NAME_L})) {
+            $line_items_defined = FALSE;
+          }
+        }
+      }
+    }
+  }
+  if (!$line_items_defined) {
+    $form_state['values']['status'] = 'offline';
+    drupal_set_message(t('Fill line items with empty event day. Status order saved as Offline'), 'warning');
+  }
+}
+
+/**
+ * Implements hook_commerce_order_status_info().
+ *
+ * @link http://api.drupalcommerce.org/api/Drupal%20Commerce/sites!all!modules!
+ * commerce!modules!order!commerce_order.api.php/function
+ * /hook_commerce_order_status_info/DC
+ */
+function commerce_availability_commerce_order_status_info() {
+  $order_statuses = array();
+  $order_statuses['offline'] = array(
+    'name' => 'offline',
+    'title' => t('Offline'),
+    'state' => 'checkout',
+    'weight' => 100,
+  );
+  return $order_statuses;
+}
+
+/**
+ * Implements hooks_views_api().
+ *
+ * @link https://api.drupal.org/api/views/views.api.php/function/
+ * hook_views_api/7
+ */
+function commerce_availability_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'commerce_availability') . '/includes/views',
+  );
+}

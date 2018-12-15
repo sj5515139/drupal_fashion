@@ -1,0 +1,33 @@
+<?php
+function dexp_layerslider_schema() {
+  $schema ['dexp_layerslider'] = array(
+    // Example (partial) specification for table "node".
+    'description' => 'The base table for layerslider.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a slide.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The title of this slide',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'settings' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}

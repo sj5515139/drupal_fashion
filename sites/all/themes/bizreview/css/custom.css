@@ -1,0 +1,1082 @@
+#logo img{
+	height:76px;
+}
+
+/* Css For Main mEnu */
+#main-navigation .menu.nav{
+	padding:0;
+	height:0px;
+}
+#main-navigation .menu.nav li a{
+	color:#fff;
+}
+
+@media (min-width: 1199px){
+	#main-navigation li a, #main-navigation li span.nolink {
+			padding: 20px 20px 21px;
+	}
+}
+
+@media (min-width: 1199px){
+	.page-reviews #content-top-second-wrapper	{
+		padding: 20px 0 40px;
+	}
+}
+
+/* Removing Reviews on Review Page */
+.page-reviews #main-content{
+	display:none;
+}
+.page-reviews #content-top-second{
+	background:#fff;
+}
+
+@media (min-width: 992px){
+	#logo {
+		padding: 5px 0 0;
+        	float: left;
+	}
+	
+	/* Reducing the size of category image on list.......*/
+    .view-categories .views-row{
+        width:180px;
+        height:100px !important;
+        margin-bottom:10px;
+    }
+}
+
+#navbar-search-collapse{
+    float: right;
+    padding-top: 10px;
+}
+#header-top{
+    border-bottom:0px;
+}
+
+/* CSS For My Products Page.......*/
+.page-my-products .view-my-products {
+  background: #fff;
+  padding: 20px;
+}
+
+/* Placing user menu on right side*/
+.menu.nav{
+	float:right;
+}
+/* CSS Logo Dropdown*/
+#logo-dropdown{
+	float:left;
+	padding: 25px 12px 25px;
+	position:relative;
+}
+
+#logo-dropdown strong{
+	font-size:28px; list-style-type:none; cursor:pointer;
+}
+
+#logo-dropdown-menu{
+	display:none;
+	z-index:1000;
+	position:absolute;
+	float:left;
+	left:-45px;
+	top:81px;
+	background:white;
+	color:black;
+	text-align:center;
+	min-width:150px;
+	box-shadow:0 1px 10px #ccc;
+}
+#dropdown-1,#dropdown-2{
+	margin:0;
+	padding:0;
+	text-align:center;
+}
+#dropdown-1 li{
+	list-style-type:none;
+	padding:5px 20px;
+	border-bottom: 1px solid #EBEBEB;
+}
+#dropdown-2 li{
+	list-style-type:none;
+	padding:0;
+	float:left;
+	width:33.33%;
+	padding-top:5px;
+	padding-bottom:5px;
+	font-size:22px;
+}
+#logo-dropdown-menu .left li{
+	padding:0;
+}
+
+#logo-dropdown:hover #logo-dropdown-menu{
+	display:block;
+}
+#logo-dropdown:hover .top-arrow-logo{
+	visibility:visible;
+}
+
+#show-cat-div{
+    position:relative;
+    float:left;
+    font-size: 18px;
+    width: 15%;
+    padding: 5px 0px;
+    padding-bottom:32px;
+    margin: 19px 0 0;
+}
+
+.top-arrow-logo{
+    position: absolute;
+    top: 67px;
+    left: 50%;
+    color: black;
+    border-color: black;
+    border-left: transparent solid 15px;
+    border-right: transparent solid 15px;
+    border-bottom: #fff solid 15px;
+    visibility: hidden;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.top-arrow-cat{
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    color: black;
+    border-color: black;
+    border-left: transparent solid 15px;
+    border-right: transparent solid 15px;
+    border-bottom: #fff solid 15px;
+    visibility: hidden;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+#cat-list{
+    display:none;
+    position: absolute;
+    z-index: 10;
+    top:57px;
+    background: white;
+    min-width: 170px;
+    box-shadow: 0 1px 10px #ccc;
+    cursor:pointer;
+    margin-top:3%;
+}
+#cat-list ul{
+    margin:0;
+    padding:0;
+}
+#cat-list ul li{
+    list-style-type:none;
+    border-bottom: 1px solid #EBEBEB;
+    padding: 5px 10px;
+}
+#cat-list ul li a{
+    font-size:15px;
+}
+
+#show-cat-div:hover{
+    /*background:#3e4095;*/
+    color:white;
+}
+#show-cat-div:hover #cat-text, #cat-text:hover{
+    color:white !important;
+}
+
+#cat-text{
+    padding-left:5px;
+    color:#fff212;
+    font-weight:600;
+}
+#cat-text:after{
+    content:'\f107';
+    font-family:'fontawesome';
+    float:right;
+}
+
+#show-cat-div:hover #cat-list{
+    display:block;
+}
+#show-cat-div:hover .top-arrow-cat{
+    visibility:visible;
+}
+
+/* CSS For Subscription Blocks.......
+.page-user-register .block-paypal-roles{
+	display: inline-block;
+	padding: 20px;
+	background: white;
+	margin-right: 10%;
+}
+#block-block-34{
+	height:50px;
+}
+*/
+
+
+/* Css For Related products View */
+.store-products{
+	float:left;
+	/*width: 140px;*/
+	margin-bottom:10px;
+	overflow: hidden;
+	text-align: center;
+	box-shadow: inset 0px 0px 10px #ccc;
+	
+}
+.odd .store-products{
+	margin-right: 10px;
+}
+.pro-title{
+	font-size:25px;
+	text-align:center;
+	margin-bottom: 5px;
+	margin-top: 5px;
+}
+.pro-price span{
+	text-decoration:line-through;
+}
+.pro-img img{
+	width:100%;
+}
+
+.store-products:hover{
+	transform: scale(1.03)
+}
+
+#block-views-store-related-products-block{
+	background: white;
+    padding: 10px;
+}
+
+#block-views-store-related-products-block .view-content ul li{
+	margin:5px;
+	width:32%;
+}
+.pro-cart .form-group{
+	margin:0;
+}
+.pro-cart .panel-body{
+	padding:0;
+	text-align:left;
+}
+.pro-cart .help-block{
+	display:none;
+}
+.pro-cart .container-inline-date{
+	margin: 0 !important;
+	width: 40%;
+	float: left;
+}
+.pro-cart .start-date-wrapper .form-group, .pro-cart .start-date-wrapper .form-group .date-padding{
+	width:100%;
+	padding:0;
+}
+.pro-cart .end-date-wrapper{
+	margin: 0 !important;
+	width: 50%;
+	float: left;
+	clear: none;
+}
+.pro-cart .end-date-wrapper .form-group, .pro-cart .end-date-wrapper .form-group .date-padding{
+	width:100%;
+	padding:0;
+}
+.fieldset.date-combo .container-inline-date > .form-item{
+	margin:0;
+}
+.start-date-wrapper .fieldset.date-combo .container-inline-date .date-padding{
+	padding:0;
+}
+.pro-cart .end-date-wrapper .form-group .date-padding{
+	margin-left: 30px;
+	margin-top: -30px;
+}
+.pro-cart .form-item-quantity{
+	width: 50%;
+	float: left;
+}
+
+.store-products input[type=text]{
+	background:#fff; 
+	text-align: center;
+	box-sizing: border-box;
+	border: 3px solid #ccc;
+	transition: 0.5s;
+	color:black;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+}
+
+.store-products .commerce-add-to-cart .form-item-quantity input[type=text]{
+	width: 50%;
+	margin: 0 25%;
+}
+.store-products input[type=text]:focus{
+	border: 3px solid #555;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+}
+.store-products .commerce-add-to-cart button{
+	padding: 10px 35px;
+	float: left;
+	margin-top: 10px;
+}
+
+
+/* Adding icon For User menu */
+#header-top-left .block-menu ul.menu li a#item-menu-user-my-products:before{
+	content:"\f1b3";
+}
+#header-top-left .block-menu ul.menu li a#item-menu-user-my-cart:before{
+	content:"\f07a";
+}
+#header-top-left .block-menu ul.menu li a#item-menu-user-list:before{
+	content:"\f03a";
+}
+#header-top-left .block-menu ul.menu li a#item-menu-fav-store:before{
+	content:"\f004";
+}
+
+
+/* Reducing Size of Search Section and color change */
+#search-wrapper{
+	background: #040404 !important;
+    	border-bottom: 1px solid #fff;
+}
+#block-views-exp-list-indexed-business-page, #block-views-exp-map-list-business-page-1 {
+ padding: 0;
+}
+
+#views-exposed-form-list-indexed-business-page .form-submit, #views-exposed-form-map-list-business-page-1 .form-submit {
+  padding: 10px;
+}
+#content-top-first-wrapper{
+	padding: 0px 0 40px;
+}
+
+/* #main-navigation li:hover, #main-navigation li.open, #main-navigation li.active-trail a, #main-navigation li.active-trail  span.nolink, #main-navigation li a.active, #main-navigation li a:hover, #main-navigation li a.current, #main-navigation li a.selected, #main-navigation li span.nolink:hover, #main-navigation li.active-trail span.nolink, #main-navigation li span.nolink.selected{ */
+	/* color:inherit; */
+	/* background:none; */
+	/* border-top:4px solid #00bff3; */
+/* } */
+
+/* Dropdown Issue on Slider */
+.contextual-links-region {
+  z-index: 1;
+}
+#dexp-layerslider{
+	position: relative;
+  z-index: 1;
+}
+
+/* Css For Header Section */
+#header-top {
+  background-color: #e96873;
+}
+
+#header-top-left .block-menu ul.menu li a{
+	color:white;
+	/*border-left: 1px solid #3e4095;*/
+}
+#header-top-left .block-menu ul.menu li.last {
+    border-right: 1px solid #fff;
+}
+
+/* Reducing Padding on Front Page */
+.page-reviews #content-top-first-wrapper {
+  padding: 0;
+}
+
+
+
+
+
+/* Css For Footer App Links */
+.foo_app{
+	border: 1px solid rgba(242, 242, 242, 0.13);
+  border-radius: 5px;
+  background:#f3f3f3;
+}
+.secure_payment{
+	display: block;
+	padding-bottom: 10px;
+}
+
+.secure_payment_links{
+	margin-right: 15px;
+	margin-top: 15px;
+	float: left;
+}
+
+.secure_payment_links:before{
+	content:"\f132";
+	font-family:fontawesome;
+	font-size:2em;
+	color:black;
+}
+
+.secure_text{
+	font-size: .6875em;
+	font-weight: bold;
+	float: left;
+	color:black;
+	text-transform: uppercase;
+}
+
+.secure_payment_payumoney img{
+	opacity: .7;
+}
+.app-links{
+	max-width: 400px;
+	margin: 0;
+	text-align: center;
+	float:right;
+	margin-top:5%;
+}
+
+.app-links ul{
+	padding:0;
+}
+
+.app-links li:first-child {
+  padding-left: 0;
+}
+
+.app-links li {
+	width: 50%;
+	float: left;
+	padding: 0 20px;
+	list-style-type: none;
+}
+
+.app-links a {
+	float: right;
+	padding: 15px 40px;
+	display: inline-block;
+	width: 100%;
+	line-height: 0;
+	padding: 15px 20px;
+	border-radius: 3px;
+}
+
+.app-links a img {
+	max-width: 150px;
+	height: 50px;
+	display: inline-block;
+}
+
+#footer-inside .col-md-3{
+	font-size:12px;
+}
+
+#footer .block h2.block-title{
+	font-size:100%;
+}
+
+/* changing image size on store in views list */
+#block-views-list-business-block-3 .views-field-field-category-icon .field-content a img{
+width:56px;
+height:56px;
+}
+
+/* Chaning Background of vendor-contact form */
+#node-104{
+	background:#fff;
+	padding:10px 80px;
+}
+
+#node-104 .submitted{
+display:none;
+}
+
+#node-104 input.form-text, textarea.form-textarea, select{
+	background-color: #f3f3f3;
+	color: black;
+}
+
+/* Changing Footer Color */
+#footer{
+	background:#040404;;
+}
+
+
+/* css for Popup Form */
+#auto-popup{
+	position: absolute;
+	display:none;
+	background: #f3f3f3;
+	border-radius: 5px;
+	width: 400px;
+	padding: 15px;
+	box-shadow:0 1px 10px;
+	z-index:1000;
+	right:5%;
+}
+
+#auto-popup #login-links a{
+	padding:10px 60px; background:#00bff3; color:#fff;
+}
+
+#auto-popup #closeButton{
+	float:right;
+	color: red;
+  border-radius: 10px;
+	border: none;
+	font-weight:600;
+}
+
+#auto-popup .simplenews-subscribe{
+	margin:0;
+	width:100%;
+}
+
+#subs-div{
+	padding: 10px 10px 1px 10px;
+  background: #3e4095;
+}
+
+#subs-div p{
+	display:none;
+}
+
+/* Removing the Padding of Featured Store */
+.block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal {
+    
+}
+
+#preface{
+    padding: 10px 0 0px;;   
+}
+
+.view-list-business .view-content .views-field-title{
+        padding:0;
+    }
+.view-list-business .view-content .views-field-field-rating{
+        line-height:0;
+    }
+.block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal{
+    padding:0;
+}
+
+.block-featured-business-modern .jcarousel-skin-default .jcarousel-item{
+    height:450px;
+}
+
+.block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal{
+    height:450px;
+}
+
+.view-homepage-category-block .jcarousel-skin-default .jcarousel-container-horizontal .jcarousel-prev-horizontal{
+    left:0;
+    top:100%
+}
+.view-homepage-category-block .jcarousel-skin-default .jcarousel-container-horizontal .jcarousel-next-horizontal{
+    top:100%;
+}
+
+/* CSS for Scrolable Menu 
+.menu.nav{
+    display: inline-flex;
+    width: 800px;
+    height: 90px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}*/
+
+/* Reducing Padding & margin on business-category page */
+.view-list-business .views-row .views-row-inner .views-field.views-field-field-image {
+    margin: 0 0 5px;
+}
+.view-list-business .views-row .views-row-inner .views-field.views-field-title{
+    padding-bottom:0px;
+}
+.view-list-business .views-row .views-row-inner .views-field.views-field-field-rating {
+    margin-bottom: 0px;
+}
+.view-list-business .views-row .views-row-inner .views-field {
+   /* padding: 0; */
+}
+.view-list-business .view-row-inner{
+    height:345px;
+}
+.view-list-business .views-row .views-row-inner .views-field.views-field-field-image img{
+    max-width:100%;
+    height:300px;
+}
+.view-list-business .views-row{
+    width:25%;
+}
+.view-list-business.view-list-business-grid .views-row:nth-child(3n+1) {
+    clear: none;
+}
+
+.view-list-business .text-center{
+    position: absolute;
+    top: 100%;
+    left: 40%;
+}
+
+
+
+/* Changin Image postion on Search page */
+.view-list-indexed-business .views-field-field-image{
+    margin-top:-8%;
+}
+.view-list-indexed-business .views-field-field-image img{
+   width:200px;
+   height:120px;
+}
+
+.view-list-indexed-business .views-field-field-discount{
+    margin-top:10px;
+}
+
+.view-list-indexed-business .views-field-field-discount .field-content{
+    border: 1px solid #dedede;
+    padding: 5px 10px;
+}
+
+/* Reducing the size of category image on list.......*/
+
+.view-categories .views-row .views-row-inner {
+    padding-bottom: 0;
+}
+
+#block-views-categories-block-2 .view-categories .views-row{
+   height:auto !important;
+}
+
+.view-categories .views-row .views-row-inner .views-field {
+    padding: 0;
+}
+
+/* Adjusting Website Field on Business Listing Page */
+.view-business-detail-header .field-website{
+    padding:0;
+}
+.view-business-detail-header .field-phone{
+    display:none;
+}
+
+/* Chnaging style of Empty Search Page Message */
+.view-empty{
+    padding:20px;
+    background:#fff;
+}
+
+/* CSS for Product Display Page */
+.node-product-display{
+	background:#fff;
+	padding:20px;
+}
+
+.node-product-display .field-field-product-image{
+	float:left;
+	margin-right:5%;
+}
+
+.node-product-display .field-name-field-mrp{
+	float:left;
+	margin-right:5px;
+}
+.node-product-display .field-name-field-mrp .field-items{
+	text-decoration:line-through;
+}
+.node-product-display .commerce-product-field-field-category{
+	float:left;
+	width:40%;
+}
+
+
+/* changing background for front page */
+#preface, .page-reviews #page, .page-reviews #content-top-second, .page-reviews .view-list-business .jcarousel-clip ul li{
+    background:#f3f3f3;
+}
+
+.page-reviews #block-views-list-business-block-3{
+    margin:0;
+}
+
+/* Css For Add to Fav Icon */
+.view-list-business .views-field-count{
+    position: absolute;
+    top: 0;
+    right: -5px;
+    background: white;
+    padding: 2px 4px;
+    z-index: 100;
+}
+
+.orange{
+    color:#ff9900;
+}
+
+/*Css for My Location Block */
+
+    #block-block-39{
+        float:left;
+        padding:5px;
+    }
+
+/* Hiding Menu Bar For Mobile */
+@media (max-width: 767px) {
+    #home-link, #show-cat-div{display:none;}
+    #auto-popup{
+        visibility:hidden;
+    }
+    
+}
+/* If the browser window is smaller than 500px */
+@media only screen and (max-width: 500px) {
+    #logo{
+        padding:0;
+        float:left;
+    }
+    #block-block-39{
+        padding:2px;
+    }
+    #logo-dropdown{
+        padding:25px 12px;
+        float:right;
+    }
+    .top-arrow-logo{
+        top:82%;
+    }
+    #logo-dropdown-menu{
+        left: -86px;
+        top: 100%;
+    }
+    #navbar-search-collapse{
+        display:none;
+    }
+    #app-download-link{
+        display:none;
+    }
+    
+    .block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal .jcarousel-prev-horizontal {
+        left: 50%;
+    }
+    .block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal .jcarousel-next-horizontal {
+        left: 50%;
+    }
+    .block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal {
+        height: 550px;
+    }
+    .block-featured-business-modern .jcarousel-skin-default .jcarousel-container-horizontal {
+        padding-top: 50px;
+    }
+    .view-list-business{
+        padding: 0 10px;
+    }
+
+}
+
+
+
+
+
+
+/* New CSS */
+/* Css for homepage category block */
+.view-homepage-category-block .jcarousel-skin-default .jcarousel-container-horizontal{
+	width:100%;
+	height:100px;
+	background: black;
+}
+.view-homepage-category-block .jcarousel-skin-default .jcarousel-container-horizontal ul{
+	margin: 0 auto !important;
+}
+.view-homepage-category-block .jcarousel-skin-default .jcarousel-item{
+	background:none;
+}
+.view-homepage-category-block .jcarousel-skin-default .jcarousel-container-horizontal ul li:hover{
+	opacity:0.5;
+}
+
+
+/* Profile Page fields Video */
+.node-business .content .field.field-name-field-video:before, .node-business .content .field.field-name-field-share-this:before, .node-business .content .field.field-name-field-vital-stage:before {
+    font-family: FontAwesome;
+    display: inline-block;
+    font-size: 180%;
+    float: left;
+    position: absolute;
+    left: 0;
+    background: #e96873;
+    color: #fff;
+    padding: 8px 0px;
+    width: 40px;
+    text-align: center;
+}
+
+.node-business .content .field.field-name-field-video:before {
+	content:'\f03d';
+}
+
+.node-business .content .field.field-name-field-share-this:before{
+	content:'\f1e0';
+}
+.node-business .content .field.field-name-field-share-this {
+    padding-left: 70px;
+}
+.node-business .content .field.field-name-field-vital-stage:before{
+    content:'\f07d';
+}
+
+/* Removing Dots for the slider on model profile page */
+.view-business-detail-header .flex-control-nav{
+	display:none;
+}
+
+/* Css for profile Page Header */
+.business-detail-header-text .field-title{
+	margin-bottom:0;
+}
+.business-detail-header-text .field-gender-age{
+	text-transform: uppercase;
+    	font-size: 15px;
+}
+
+/* Homepage Models Block */
+.view-models-tab-block .view-header{
+	font-size:28px;
+	font-weight:600;
+	color:white;
+	text-transform:uppercase;
+}
+.view-models-tab-block .view-header .bdr_bg{
+	background: #d71c26 none repeat scroll 0 0;
+	height: 2px;
+	margin: 15px auto 50px;
+	position: relative;
+	width: 400px;
+}
+.view-models-tab-block .view-header .bdr_bg .trend_star{
+	background: #fff none repeat scroll 0 0;
+	border: 1px solid #d71c26;
+	border-radius: 50%;
+	bottom: -12px;
+	color: #d71c26;
+	left: 47%;
+	padding: 2px;
+	font-size: 18px;
+	position: absolute;
+}
+.view-models-tab-block .view-content .quicktabs-tabs{
+	margin-top: 3%;
+	margin-bottom: 3%;
+    text-align: center;
+    /*font-size: 24px;
+    font-weight: 600;
+    color: #00bff3;*/
+}
+.view-models-tab-block .view-content .quicktabs-tabs li a{
+	/*padding: 15px 15px;
+	margin-right: 2%;
+	background:#fff;
+	border:1px solid #fff;*/
+}
+.view-models-tab-block .view-content .quicktabs-tabs li a:hover{
+	/*background:#00bff3;
+	color:#fff;
+	border:1px solid #00bff3;*/
+}
+.view-models-tab-block .view-content .quicktabs-tabs li.active a{
+	/*border:2px solid #00bff3;*/
+}
+	
+.view-models-tab-block .view-content .quicktabs-views-group{
+	width: 24%;
+	float: left;
+	height: 300px;
+	margin-right: 1%;
+	margin-bottom: 1%;
+	/*border-radius: 10%;*/
+	overflow: hidden;
+}
+
+.view-models-tab-block .view-content .quicktabs-views-group .model-image{
+	position: relative;
+}
+
+.view-models-tab-block .view-content .quicktabs-views-group .model-image .image img{ /* Model Imgae Height */
+	height:300px;
+}
+.view-models-tab-block .view-content .quicktabs-views-group .model-image .title{
+	position: absolute;
+	cursor:pointer;
+	top: -12%;
+	background: #00bff375;
+	width: 100%;
+	text-align: center;
+	font-size: 20px;
+	line-height: 1.8;
+	height: 100%;
+	transition: 1.5s;
+	-webkit-transform: translateY(100%);
+	transform: translateY(100%);
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-transition: opacity 0.1s 0.3s, -webkit-transform 0.4s;
+	transition: opacity 0.1s 0.3s, -webkit-transform 0.4s;
+	transition: transform 0.4s, opacity 0.1s 0.3s;
+	transition: transform 0.4s, opacity 0.1s 0.3s, -webkit-transform 0.4s;
+}
+.view-models-tab-block .view-content .quicktabs-views-group .model-image .title a, .view-models-tab-block .view-content .quicktabs-views-group .model-image .title{
+	color:white !important;
+}
+.view-models-tab-block .view-content .quicktabs-views-group .model-image:hover .title{
+	top: 0;
+	-webkit-transform: translateY(0px);
+	transform: translateY(0px);
+	-webkit-transition: opacity 0.1s, -webkit-transform 0.4s;
+	transition: opacity 0.1s, -webkit-transform 0.4s;
+	transition: transform 0.4s, opacity 0.1s;
+	transition: transform 1.1s, opacity 1.9s, -webkit-transform 0.9s;
+}
+
+.view-models-tab-block .view-content .quicktabs-views-group .model-image:hover .title p{
+	background:#e85663e8;
+}
+.view-models-tab-block .view-content .quicktabs-views-group .model-image .title div.fivestar-widget-static .star{
+	float:none;
+	display:inline-block;
+}
+/* Changing background color for tabs on homepage */
+.page-reviews #page{
+	background-image:linear-gradient(135deg, #e85663e8, rgb(253, 224, 218))
+}
+
+/* Css For Buttons on Profile Page */
+#block-block-1 p a{
+	color:white !important;
+	padding: 15px 14.7%;
+	background: #e96873;
+	font-size: 18px;
+}
+.mdl-lnk p a{
+	color: white !important;
+    padding: 15px 14.7%;
+    background: #e96873;
+    font-size: 18px;
+    line-height: 2.3;
+}
+
+/* CSS for Model products on profile page */
+#full-width-wrapper #block-views-store-related-products-block{
+	display:none;
+}
+
+.view-store-related-products .jcarousel{
+	width:auto !important;
+}
+
+/* Changing background color for male & female models pages */
+.page-male-models #main-content {
+    background-image: linear-gradient(135deg, rgb(28, 165, 221), rgb(185, 209, 216));
+}
+.page-female-models #main-content {
+    background-image: linear-gradient(135deg, rgb(213, 76, 108), rgb(181, 106, 171));
+}
+
+/* Changing Color for category Pages */
+.page-taxonomy-term #main-content{
+	background-image: linear-gradient(135deg, #ba5370, #6dd5ed);
+}
+
+/* CSS fr adjusting photos and videos in profile page */
+.view-model-portfolio .view-content .jcarousel-container ul{
+	width:auto !important;	
+}
+.view-model-portfolio .view-content .jcarousel-container ul li{
+	margin:5px;	
+}
+.view-model-portfolio .view-content .jcarousel-container ul li a img{
+	width:140px;
+	height:120px;	
+}
+
+.view-model-portfolio .view-content .player iframe{
+	width:310px !important;
+}
+.node-business .content .field-name-field-calendar{
+	padding:0;
+}
+
+/* Css for enquiry links on model box */
+.view-list-business .views-row .views-row-inner .views-field.views-field-nothing{
+	border: 0;
+	padding:0;
+    	padding: .5%;
+}
+.enquiry-box .enquiry-flag, .enquiry-box .enquiry-link{
+	width:40%;
+	border: 1px solid #e96873;
+	border-radius: 5%;
+	text-align: center;
+	font-size: 12px;
+}
+.enquiry-box .enquiry-flag{
+	display:inline-block;
+}
+.enquiry-box .enquiry-link{
+	display:inline-block;
+	margin: 0;
+	padding: 0;
+	margin-left: 18%;
+}
+.view-models-tab-block .enquiry-box{
+	margin:0 2%;
+}
+.view-models-tab-block .enquiry-box .enquiry-flag, .view-models-tab-block .enquiry-box .enquiry-link{
+	background:#e96873;
+}
+.business-detail-review .field-write-comment a{
+	color:#e96873;
+}
+/* Model List block on contact page */
+.view-enquiry-model-list{
+	background: #fff;
+    	padding: 10px;
+}
+.view-enquiry-model-list .views-row-inner .views-field-field-image img{
+	border-radius:50%;
+}
+
+/* If the browser window is smaller than 500px */
+@media only screen and (max-width: 500px) {
+	.view-models-tab-block .view-header .bdr_bg{
+		width: 100%;
+		margin: 15px auto 0px;
+	}
+	.view-models-tab-block .view-content .quicktabs-views-group{
+		width: 90%;
+		margin: 2% 5%;
+		height: 350px;
+	}
+	.view-models-tab-block .view-content .quicktabs-views-group .model-image .image img{
+		height:350px;
+	}
+	.view-models-tab-block .view-content .quicktabs-tabs li a img{
+		height:100px !important;
+	}
+	.view-list-business .views-row{
+		width:auto;
+		heigth:auto;
+	}
+	.view-business-detail-header .flex-direction-nav a{
+		top:20%;
+	}
+	
+}

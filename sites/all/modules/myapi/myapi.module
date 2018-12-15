@@ -1,0 +1,120 @@
+<?php
+/** 
+* Implementing hook_menu()
+**/
+function myapi_menu() {
+  $items = array();
+
+  // The path that the endpoint will be registered to
+  $items['catapi'] = array(
+	
+    //'page callback' => 'drupal_get_form',
+    'page callback' => 'cat_api_page_callback',
+    // The name of the function called when the path is accessed
+   // 'page arguments' => array('cat_api_page_callback'),
+
+    // Set this value to TRUE to allow access to any user
+    'access callback' => TRUE,
+
+    // Declare this as a simple registered path
+    //'type' => MENU_CALLBACK,
+  );
+
+  // Return the $items array to register the path
+  return $items;
+}
+
+function cat_api_page_callback() {
+	$order = commerce_order_load(103, array('lock' => FALSE));
+	$line = commerce_line_item_load(14);
+	$product = commerce_product_load(5);
+	$node = node_load(10);
+	$user_d = user_load(4);
+	//dsm($product);
+	
+	$query = db_query("SELECT * FROM commerce_product WHERE type = :t AND status = :s;",array(':t'=>'store_products', ':s'=>'1'));
+	foreach($query as $q){
+		$products[] = $q->product_id;
+	}
+  $vocabulary = taxonomy_get_tree('2');
+  foreach($vocabulary as $voc){
+  	$nodes = array();
+  	$node_data = array();
+  	$dn = array();
+  	
+  	$tid = $voc->tid;
+  	$term_title = $voc->name;
+  	$term = taxonomy_term_load($tid);
+  	$term_image_url = file_create_url($term->field_category_image['und'][0]['uri']);
+  	$nodes = taxonomy_select_nodes($tid);
+  	
+  	//dsm($nodes);
+  	
+  	$num=1;
+  	foreach($nodes as $node){
+  		$store_gallery = array();
+  		$store_offers = array();
+  		$node_data[$node] = node_load($node);//dsm($node_data);
+  		$nid = $node_data[$node]->nid;
+  		
+  		foreach($node_data[$node]->field_photos['und'] as $fp){
+  			$store_gallery[] = file_create_url($fp['uri']);
+  		}
+  		
+  		foreach($products as $pro){
+  			$p = commerce_product_load($pro);
+  			if($p->field_new['und'][0]['target_id']== $nid){
+  				$store_offers[] = array(
+  				'pro_id' => $pro,
+  				'pro_title' => $p->title,
+  				'pro_description' =>'',
+  				'pro_mrp' => isset($p->field_mrp['und'][0]['value'])?$p->field_mrp['und'][0]['value']:'',
+  				'pro_price' => number_format($p->commerce_price['und'][0]['amount'],2),
+  				'pro_image' => file_create_url($p->field_product_image['und'][0]['uri']),
+  				);
+  			}
+  		}
+  		
+  		$dn[] = array(
+  		'store_id' => $node_data[$node]->nid,
+  		'store_title' => $node_data[$node]->title,
+  		'store_description' => isset($node_data[$node]->body['und'][0]['value'])?$node_data[$node]->body['und'][0]['value']:'',
+  		'store_gallery' => $store_gallery,
+  		//'store_category' => $node_data[$node]->field_category['und'][0]['tid'],
+  		'store_open_time' => isset($node_data[$node]->field_open_time['und'][0]['value'])?$node_data[$node]->field_open_time['und'][0]['value']:'',
+  		'store_price_range' => isset($node_data[$node]->field_price_range['und'][0]['value'])?$node_data[$node]->field_price_range['und'][0]['value']:'',
+  		'store_lat' => isset($node_data[$node]->field_coordinates['und'][0]['lat'])?$node_data[$node]->field_coordinates['und'][0]['lat']:'',
+  		'store_long' => isset($node_data[$node]->field_coordinates['und'][0]['lon'])?$node_data[$node]->field_coordinates['und'][0]['lon']:'',
+  		'store_banner' => file_create_url($node_data[$node]->field_photo_banner['und'][0]['uri']),
+  		'store_thumbnail' => file_create_url($node_data[$node]->field_image['und'][0]['uri']),
+  		'store_rating' => isset($node_data[$node]->field_rating['und'][0]['rating'])?$node_data[$node]->field_rating['und'][0]['rating']:'',
+  		'store_phone' => isset($node_data[$node]->field_phone['und'][0]['value'])?$node_data[$node]->field_phone['und'][0]['value']:'',
+  		'store_website' => isset($node_data[$node]->field_website['und'][0]['value'])?$node_data[$node]->field_website['und'][0]['value']:'',
+  		'store_address' => $node_data[$node]->field_postaladdress['und'][0]['throughfare'].','.
+	  		$node_data[$node]->field_postaladdress['und'][0]['premise'].','.
+	  		$node_data[$node]->field_postaladdress['und'][0]['locality'].','.
+	  		$node_data[$node]->field_postaladdress['und'][0]['postal_code'].',India',
+	  	'store_offers' => $store_offers,
+  		);
+  		
+  		
+  		
+  	}
+  	//dsm($node_data);
+  	$data[] = array(
+  		'id' => $voc->tid,
+  		'title' => $voc->name,
+  		'description' => $voc->description,
+  		'image' => $term_image_url,
+  		'store' => $dn
+  		);
+  	//$data['store'] = $dn;
+  }
+  	
+  	//$data = drupal_json_encode($data);
+  	//print_r($data);
+  	//echo '<pre>'; print_r($data); echo '</pre>';
+  	//var_dump($data);
+  	//dsm($data);
+  	print_r(drupal_json_encode($data));
+}

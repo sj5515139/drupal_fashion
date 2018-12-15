@@ -1,0 +1,237 @@
+﻿/* $Id: color-pink-style.css,v 1.0.0 2013/09/25 08:18:15 symphonythemes Exp $ */
+/*------------------------------------*\
+	RESET
+\*------------------------------------*/
+
+a,
+a:link,
+a:visited {
+  color: #00bff3;
+}
+.themecolor-text {
+  color: #e96873;
+}
+pre,
+div.code {
+  border-left: 5px solid #e96873;
+}
+.highlight {
+  background: #e96873;
+}
+blockquote::before {
+  color: #e96873;
+}
+
+h2.home-block-title:after,
+h2.block-title:after,
+.node-type-full-page h1.page-title:after {
+  background: #e96873;
+}
+a.btn-default,
+.btn-default {
+  border-color: #e96873;
+  background-color: #e96873;
+  color: #fff;
+}
+.btn-border {
+  border-color: #e96873;
+  background: #fff;
+}
+.btn-default:hover {
+  background-color: #e96873;
+  border-color: #e96873;
+}
+a.btn-primary,
+.btn-primary {
+  background-color: #e96873;
+  border-color: #1896b8;
+  color: #FFFFFF;
+}
+/*------------------------------------*\
+	Pages CSS
+\*------------------------------------*/
+#search-wrapper,
+#main-menu-wrapper,
+#color-background-wrapper {
+  background: #e96873;
+}
+
+
+/*------------------------------------*\
+	NAVIGATION CSS
+\*------------------------------------*/
+li a.active {
+  color: #e96873;
+}
+
+@media (max-width: 767px) {  
+  .navbar-collapse {
+	background:#e96873;
+  }
+}
+
+#main-navigation ul ul {
+  background: #e96873;
+}
+#main-navigation ul ul li {
+  border-bottom: 1px solid #6edbf8;
+}
+#main-navigation li:hover,
+#main-navigation li.open,
+#main-navigation li.active-trail a,
+#main-navigation li.active-trail  span.nolink,
+#main-navigation li a.active,
+#main-navigation li a:hover,
+#main-navigation li a.current,
+#main-navigation li a.selected,
+#main-navigation li span.nolink:hover,
+#main-navigation li.active-trail span.nolink,
+#main-navigation li span.nolink.selected {
+  color:#fff;
+  background: #e96873;
+}
+
+/* Block user menu on top left */
+#header-top-left .block-menu ul.menu li a:hover,
+#header-top-left .block-menu ul.menu li a.active {
+  background: none;
+  color: #e96873;
+}
+
+
+/*------------------------------------*\
+	BUSINESS CSS
+\*------------------------------------*/
+/* Business List */
+.extra-content,
+.block-events.view-events .views-field-field-event-title {
+  background: rgba(0,191,243,0.8);
+}
+#block-views-exp-list-indexed-business-page h2.block-title,
+#block-views-exp-map-list-business-page-1 h2.block-title {
+  background: #e96873;
+  border-right: 1px solid #6edbf8;
+}
+#block-views-exp-list-indexed-business-page h2.block-title:after,
+#block-views-exp-map-list-business-page-1 h2.block-title:after {
+  border-color: rgba(0, 191, 243, 0);
+  border-left-color: #e96873;
+}
+#block-views-exp-list-indexed-business-page h2.block-title:before,
+#block-views-exp-map-list-business-page-1 h2.block-title:before {
+  border-color: rgba(110, 219, 248, 0);
+  border-left-color: #6edbf8;
+}
+.view-list-business .views-row .views-field-field-address i,
+.view-list-business .views-row .views-field-field-phone i,
+.view-list-business .views-row .views-field-field-website i {
+  color: #e96873;
+}
+
+.node-business .content .field .field-label {
+  color: #e96873;
+}
+
+.node-business .content .field.field-name-body:before,
+.node-business .content .field.field-name-field-website:before,
+.node-business .content .field.field-name-field-open-time:before,
+.node-business .content .field.field-name-field-price-range:before,
+.node-business .content .field.field-name-field-highlights:before,
+.node-business .content .field.field-name-field-location:before,
+.node-business .content .field.field-name-field-photos:before,
+.node-business .content .field.field-name-field-tags:before,
+.node-business .content .field.field-name-field-category:before {
+  background: #e96873;
+}
+
+fieldset.group-purchase-options {
+  background: #e96873;
+}
+.node-business .field-name-field-events > .field-label:after {
+  background: none repeat scroll 0 0 #e96873;
+}
+.node-business .content .field-collection-container .field.field-name-field-event-title {
+  color: #e96873;
+}
+
+/* Block Featured Biz */
+.jcarousel-skin-default .jcarousel-prev-horizontal,
+.jcarousel-skin-default .jcarousel-next-horizontal {
+  border-color: #e96873;
+}
+.jcarousel-skin-default .jcarousel-prev-horizontal:hover,
+.jcarousel-skin-default .jcarousel-next-horizontal:hover {
+  background-color: #e96873;
+}
+.jcarousel-skin-default .jcarousel-prev-horizontal:before,
+.jcarousel-skin-default .jcarousel-next-horizontal:before {
+  color: #e96873;
+}
+.jcarousel-skin-default .jcarousel-prev-horizontal:hover:before,
+.jcarousel-skin-default .jcarousel-next-horizontal:hover:before {
+  color: #fff;
+  background: #e96873;
+}
+
+
+/* Block Category */
+.block-featured-biz .views-row .information-group .field-title a:hover {
+  color: #e96873;
+}
+
+/* Business Category List */
+.list-categories .icon {
+  background: #e96873;
+}
+.view-categories .views-row .views-row-inner .views-field-name:after {
+  background: #e96873;
+}
+.view-categories .views-row .views-row-inner .views-field-name a:hover {
+  color: #e96873;
+}
+.view-categories .views-row .views-row-inner .views-field-field-category-image .field-node-count {
+  background: rgba(0,191,243,0.8);
+}
+
+/* News */
+.view-list-news .views-field-title a:hover {
+  color: #e96873;
+}
+
+/* Member */
+.view-member .view-content {
+  background: #e96873;
+}
+
+/* Block Contact information */
+.block-contact-informations ul li i {
+  color: #e96873;
+}
+
+/* Sep boxed pricing */
+.sep-boxed-pricing ul li.footer-row a.button {
+  background: #fafafa;
+  border: 1px solid #ccc;
+  color: #e96873;  
+}
+.sep-boxed-pricing ul li.footer-row a.button:hover {
+  background: #e96873;
+  color: #fafafa;  
+  border: 1px solid #e96873;
+}
+.sep-boxed-pricing ul li.title-row {
+  background: #47d2f8;
+  border-color: #47d2f8;
+}
+.sep-boxed-pricing ul li.pricing-row {
+  background: #e96873;
+  border-color: #82e0fa #e96873 #e96873;
+}
+.sep-boxed-pricing .price strong {
+  color: #000;
+}
+
+/* FlexSlider */
+.flex-control-paging li a.flex-active {
+  background: #e96873;
+}

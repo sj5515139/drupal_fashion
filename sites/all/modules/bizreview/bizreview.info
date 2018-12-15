@@ -1,0 +1,3 @@
+name = BizReview custom module
+description = Add custom functions to the BizReview theme
+core = 7.x

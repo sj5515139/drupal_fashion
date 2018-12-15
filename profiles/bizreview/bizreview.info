@@ -1,0 +1,8 @@
+name = BizReview
+description = BizReview install Full Source Code package.
+version = VERSION
+core = 7.x
+dependencies[] = block
+files[] = bizreview.profile
+
+

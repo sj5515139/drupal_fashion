@@ -1,0 +1,41 @@
+<?php
+/**
+ * @file
+ * PDF Export: mPDF processor
+ */
+
+
+/**
+ * Implements hook_libraries_info().
+ */
+function pdf_export_mpdf_libraries_info() {
+  $libraries['mpdf'] = array(
+    'name' => 'mpdf',
+    'vendor url' => 'http://www.mpdf1.com/mpdf/index.php',
+    'download url' => 'http://mpdf1.com/repos/MPDF57.zip',
+    'version arguments' => array(
+      'file' => 'mpdf.php',
+      'pattern' => "@(?i:mPDF_VERSION)',\s?'([0-9\.a-z]+)@",
+    ),
+    'files' => array(
+      'php' => array(
+        'mpdf.php',
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_pdf_export_processor_info().
+ */
+function pdf_export_mpdf_pdf_export_processor_info() {
+  return array(
+    'mpdf' => array(
+      'name' => 'mPDF',
+      'class' => 'PdfExportMpdfProcessor',
+      'file' => 'includes/PdfExportMpdfProcessor',
+    ),
+  );
+}

@@ -1,0 +1,104 @@
+<?php
+
+/*
+ * Alter the listing form to enable Conditional Fields to work with Commerce Node Checkout
+ */
+/*function bizreview_hook_form_alter(&$form, &$form_state, $form_id) {
+  if($form_id == 'business_node_form') {
+  $module_path = drupal_get_path("module","bizreview");
+  $form['#attached']['js'] = array($module_path . '/bizreview.js');
+}
+}
+*/
+
+function bizreview_hook_form_alter(&$form, $form_state, $form_id) {
+
+  if($form_id == 'business_node_form'){
+var_dump($form);
+     $form['#after_build'][] = array('bizreview_after_build');
+   }
+}
+
+function bizreview_after_build($form, &$form_state) {
+  $path = drupal_get_path('module', 'bizreview');
+  drupal_add_js ("$path/bizreview.js");
+  return $form;
+}
+
+/*
+** Asking For login on adding a product for unlogged user...
+*/
+function bizreview_form_commerce_cart_add_to_cart_form_alter(&$form, &$form_state, $form_id) {
+  $form['#validate'][] = 'bizreview_commerce_cart_add_to_cart_form_validate';
+  $form['quantity']['#title'] = t('No. of Days'); // Changin the text of quantity in add to cart page.
+}
+
+/*
+**Login before adding a product to cart
+*/
+function bizreview_commerce_cart_add_to_cart_form_validate($form, &$form_state) {
+  //if ($form['uid']['#value'] == 0) { // Check for anonymous.
+    // form_set_error('quantity', t("Please Login to go further. No Account? <a href=$base_url/user/register>Register</a> Here.")); // Message telling the user to login.
+    // drupal_goto('user/login', array('query' => drupal_get_destination())); // Redirection to the login form with current path as destination.
+  // }
+}
+
+/**
+ * Implements of hook_FORM_ID_form_alter().
+ */
+function bizreview_form_contact_site_form_alter(&$form, &$form_state, $form_id){
+	
+	$view = views_get_view('enquiry_model_list');
+	$view->execute();
+	$results = $view->result;
+	foreach($results as $r){
+		$list[] = $r->node_title;
+	}
+	
+	$list = array_unique($list);
+	//dsm($list);
+	
+	$option = array();
+	//$nodes = node_load_multiple(array(), array('type' => 'business'));
+	//foreach($nodes as $node){
+	//	$option[] = $node->title;
+	//}
+    	$form['model'] = array(
+	        '#title' => t('Model'),
+	        '#type' => 'hidden',
+	       //'#options' => drupal_map_assoc($option),
+	       //'#multiple' => TRUE,
+	       //'#required' => TRUE,
+	       '#value' => $list,
+	);
+
+    $order = array('name', 'mail', 'subject','model', 'cid', 'message', 'copy', 'actions');
+
+    foreach($order as $key => $field) {
+        $form[$field]['#weight'] = $key;
+    }
+}
+
+/**
+ * Implements of hook_mail_alter().
+ * This is where the mail being sent if edited. I just add it the the end of the message
+ */
+function bizreview_mail_alter(&$message) {
+	$models = NULL;
+	if ($message['id'] == 'contact_page_mail'){
+		if(isset($message['params']['model']) && $message['params']['model'] != NULL){
+			$models = implode(',', $message['params']['model']);
+		}
+		$message['body'][] .= t('Model - ').$models;
+		
+		//clearing the flag for current user
+		$fid = 2; // enquiry_model flag id;
+		global $user;
+		db_delete('flagging')
+		->condition(db_and()
+			->condition('fid', $fid)
+			->condition('uid', $user->uid)
+		)
+		->execute();
+	}
+}

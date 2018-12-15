@@ -1,0 +1,39 @@
+<?php
+/**
+ * @file
+ * Install functions for PDF Export: mPDF.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function pdf_export_mpdf_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    $libraries = array(
+      'mpdf' => 'MPDF',
+    );
+    $t = get_t();
+    foreach ($libraries as $lib => $label) {
+      $requirements['mpdf_' . $lib] = array(
+        'title' => $t('MPDF: @library library', array('@library' => $label)),
+        'value' => $t('The @library library is not present', array('@library' => $label)),
+        'severity' => REQUIREMENT_ERROR,
+      );
+      if (function_exists('libraries_detect')) {
+        if (($library = libraries_detect($lib)) && !empty($library['installed'])) {
+          $requirements['mpdf_' . $lib]['value'] = $t('@version', array(
+            '@version' => $library['version'],
+          ));
+          $requirements['mpdf_' . $lib]['severity'] = REQUIREMENT_OK;
+        }
+        elseif (!empty($library['error'])) {
+          $requirements['mpdf_' . $lib]['description'] = $library['error message'];
+        }
+      }
+    }
+  }
+
+  return $requirements;
+}

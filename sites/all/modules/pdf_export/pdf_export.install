@@ -1,0 +1,21 @@
+<?php
+/**
+ * @file
+ * PDF Export install/uninstall functions.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function pdf_export_uninstall() {
+  $vars = array(
+    'pdf_export_library',
+    'pdf_export_site_domain',
+    'pdf_export_rewrite_basic_auth',
+    'pdf_export_debug',
+  );
+
+  foreach ($vars as $var) {
+    variable_del($var);
+  }
+}

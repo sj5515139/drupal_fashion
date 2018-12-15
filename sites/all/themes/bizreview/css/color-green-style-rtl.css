@@ -1,0 +1,16 @@
+/* Green color - RTL */
+#block-views-exp-list-indexed-business-page h2.block-title,
+#block-views-exp-map-list-business-page-1 h2.block-title {
+  border-right: none; 
+  border-left: 1px solid #b9e6aa;
+}
+#block-views-exp-list-indexed-business-page h2.block-title:after,
+#block-views-exp-map-list-business-page-1 h2.block-title:after {
+  border-color: rgba(141,194,123, 0);
+  border-right-color: #8dc27b;
+}
+#block-views-exp-list-indexed-business-page h2.block-title:before,
+#block-views-exp-map-list-business-page-1 h2.block-title:before {
+  border-color: rgba(185, 230, 170, 0);
+  border-right-color: #b9e6aa;
+}

@@ -1,0 +1,17 @@
+name = PDF Export: Views
+description = Provides the ability to create a button inside the views.
+core = "7.x"
+package = "PDF"
+
+dependencies[] = views
+dependencies[] = pdf_export
+
+files[] = pdf_export_views.views.inc
+files[] = pdf_export_views_handler_area.inc
+
+; Information added by Drupal.org packaging script on 2017-04-22
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "pdf_export"
+datestamp = "1492900747"
+

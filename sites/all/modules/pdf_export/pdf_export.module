@@ -1,0 +1,328 @@
+<?php
+
+/**
+ * @file
+ * PDF Export module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function pdf_export_menu() {
+  $items = array();
+
+  $items['admin/appearance/pdf-export'] = array(
+    'title' => 'PDF Export settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pdf_export_admin_form'),
+    'access arguments' => array('administer pdf export'),
+    'file' => 'pdf_export.admin.inc',
+    'weight' => 99,
+  );
+
+  $items['pdf_export/render'] = array(
+    'title' => 'Render PDF',
+    'page callback' => 'pdf_export_render',
+    'access arguments' => array('pdf export'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['pdf_export/download/%/%'] = array(
+    'title' => 'Download PDF',
+    'page callback' => 'pdf_export_download',
+    'page arguments' => array(2, 3),
+    'access arguments' => array('pdf export'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function pdf_export_permission() {
+  return array(
+    'pdf export' => array(
+      'title' => t('PDF Export'),
+      'description' => t('Perform the PDF Export render and download.'),
+    ),
+    'administer pdf export' => array(
+      'title' => t('Administer PDF Export'),
+      'description' => t('Configure PDF Export.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_page_build().
+ */
+function pdf_export_page_build(&$page) {
+  drupal_add_js(drupal_get_path('module', 'pdf_export') . '/js/pdf_export.js', array(
+    'type' => 'file',
+    'scope' => 'footer',
+  ));
+}
+
+/**
+ * Implements hook_theme().
+ */
+function pdf_export_theme($existing, $type, $theme, $path) {
+  return array(
+    'pdf_export_button' => array(
+      'variables' => array(
+        'attributes' => NULL,
+        'label' => NULL,
+        'css_selector' => NULL,
+        'file_name' => NULL,
+        'theme_name' => NULL,
+        'css_paths' => NULL,
+      ),
+      'file' => 'pdf_export.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Handle the html as PDF.
+ */
+function pdf_export_render() {
+  $scheme = _pdf_export_get_scheme_wrapper();
+  $pdf_path = $scheme->getUri();
+  if (!file_prepare_directory($scheme->realpath(), FILE_CREATE_DIRECTORY)) {
+    _pdf_export_error(t('Not able to create or access to the pdf generation folder.'));
+  }
+
+  $html = $_POST['html'];
+  $filename = $_POST['filename'];
+  $css_theme = $_POST['css_theme'];
+  $css_paths = $_POST['css_paths'];
+
+  if (empty($html)) {
+    _pdf_export_error(t('No html to render.'));
+  }
+
+  if (empty($filename)) {
+    _pdf_export_error(t('Undefined filename.'));
+  }
+
+  $library_name = variable_get('pdf_export_library', 'mpdf');
+  $processor = _pdf_export_processor_load($library_name);
+  if (empty($processor)) {
+    _pdf_export_error(t('Could not load the processor for "@library".', array(
+      '@library' => $library_name,
+    )));
+  }
+
+  $library_loaded = $processor->loadLibrary();
+  if (!$library_loaded) {
+    _pdf_export_error(t('Could not load the library "@library".', array(
+      '@library' => $library_name,
+    )));
+  }
+
+  $rewrite_basic_auth = variable_get('pdf_export_rewrite_basic_auth', FALSE);
+  if (!empty($css_theme) && !empty($css_paths)) {
+    $theme_path = drupal_get_path('theme', $css_theme);
+    $base_path = _pdf_export_get_base_path($theme_path, $rewrite_basic_auth);
+
+    $processor->setBasePath($base_path);
+
+    // Including css files.
+    $css_files = explode(' ', $css_paths);
+    foreach ($css_files as $css_file) {
+      $css_path = $theme_path . '/' . $css_file;
+
+      if (!file_exists($css_path)) {
+        _pdf_export_error(t('CSS file "@filename" is missing.', array(
+          '@filename' => $css_file,
+        )));
+      }
+
+      $processor->addCssStyles(file_get_contents($css_path));
+    }
+  }
+
+  if ($rewrite_basic_auth) {
+    $html = preg_replace_callback("/(<img[^>]*?src *= *[\"'])(https?:\/\/)([a-z|\.|\-|0-9]*)([^\"']*).?(\".*?>)/i", '_pdf_export_prepend_basic_auth_callback', $html);
+  }
+
+  if (variable_get('pdf_export_debug', FALSE)) {
+    $processor->enableDebug();
+  }
+
+  // Let other modules alter the HTML.
+  drupal_alter('pdf_export_html', $html, $filename);
+
+  $processor->setHtml($html);
+
+  $pdf_path = file_create_filename($filename, $pdf_path);
+
+  $real_filename = explode('/', $pdf_path);
+  $real_filename = $real_filename[count($real_filename) - 1];
+
+  $processor->save($pdf_path);
+
+  drupal_json_output((object) array(
+    'url' => url('pdf_export/download/' . $real_filename . '/' . $filename),
+  ));
+
+  drupal_exit();
+}
+
+/**
+ * Helper to get the base path for images.
+ *
+ * @param string $theme_path
+ *   Selected theme path.
+ * @param bool $rewrite_basic_auth
+ *   TRUE if the basic auth rewrite is enabled.
+ *
+ * @return string
+ *   The theme base path.
+ */
+function _pdf_export_get_base_path($theme_path, $rewrite_basic_auth) {
+  $base_path = variable_get('pdf_export_site_domain', NULL);
+
+  $styles = $theme_path;
+
+  if (empty($base_path)) {
+    return _pdf_export_generate_base_path($styles, $rewrite_basic_auth);
+  }
+
+  return $base_path . '/' . $styles;
+}
+
+/**
+ * Sends an error message at pdf generation.
+ */
+function _pdf_export_error($message) {
+  drupal_add_http_header('Status', '500 Internal Server Error', FALSE);
+
+  watchdog('pdf_export', $message, array(), WATCHDOG_ERROR, current_path());
+
+  drupal_json_output((object) array(
+    'errorMessage' => $message,
+  ));
+
+  drupal_exit();
+}
+
+/**
+ * Regex replace callback in order to set the correct url for images.
+ */
+function _pdf_export_prepend_basic_auth_callback($matches) {
+  $site_domain = variable_get('pdf_export_site_domain', NULL);
+
+  $new_path = array(
+    $matches[1],
+    'site_url',
+    $matches[4],
+    $matches[5],
+  );
+
+  $new_path[1] = $site_domain;
+  if (empty($site_domain)) {
+    $new_path[1] = _pdf_export_generate_base_path(NULL);
+  }
+
+  return implode('', $new_path);
+}
+
+/**
+ * Creates a base path for images (mostly used when using basic auth).
+ */
+function _pdf_export_generate_base_path($styles_path, $basic_auth = FALSE) {
+  $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+
+  $url .= '://';
+  if ($basic_auth && !empty($_SERVER["PHP_AUTH_USER"])) {
+    $url .= $_SERVER["PHP_AUTH_USER"];
+
+    if (!empty($_SERVER["PHP_AUTH_PW"])) {
+      $url .= ':' . $_SERVER["PHP_AUTH_PW"];
+    }
+
+    $url .= '@';
+  }
+
+  $url .= $_SERVER["HTTP_HOST"] . '/' . $styles_path;
+
+  return $url;
+}
+
+/**
+ * Apply the headers for PDF download.
+ */
+function pdf_export_download($real_filename, $filename) {
+  $scheme = _pdf_export_get_scheme_wrapper();
+
+  // Cannot find the scheme, something must be broken.
+  if (empty($scheme)) {
+    drupal_not_found();
+  }
+
+  $pdf_uri = sprintf('%s/%s', $scheme->getUri(), $real_filename);
+  $scheme->setUri($pdf_uri);
+  $pdf_path = $scheme->realpath();
+
+  if (!file_exists($pdf_path)) {
+    drupal_not_found();
+  }
+
+  // Serve file download.
+  drupal_add_http_header('Pragma', 'public');
+  drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
+
+  drupal_add_http_header('X-Content-Type-Options', 'nosniff');
+  drupal_add_http_header('Content-Type', 'application/pdf');
+  drupal_add_http_header('Content-Disposition', "attachment; filename=$filename;");
+  drupal_add_http_header('Content-Transfer-Encoding', 'binary');
+  drupal_add_http_header('Content-Length', filesize($pdf_path));
+  readfile($pdf_path);
+  $scheme->unlink($scheme->getUri());
+  drupal_exit();
+}
+
+/**
+ * Returns the configured scheme wrapper.
+ *
+ * @return DrupalStreamWrapper|bool
+ *   Returns a new stream wrapper object appropriate for the configured $scheme.
+ *   FALSE is returned if no registered handler could be found.
+ */
+function _pdf_export_get_scheme_wrapper() {
+  $scheme = file_stream_wrapper_get_instance_by_scheme(variable_get('pdf_export_scheme', 'temporary'));
+
+  if (empty($scheme)) {
+    return FALSE;
+  }
+
+  $scheme->setUri($scheme->getUri() . variable_get('pdf_export_folder', 'pdf_export'));
+
+  return $scheme;
+}
+
+/**
+ * Loads a PDF Export processor.
+ *
+ * @param string $library
+ *   Library name.
+ */
+function _pdf_export_processor_load($library) {
+  $hook = 'pdf_export_processor_info';
+  foreach (module_implements($hook) as $module) {
+    $processors = module_invoke($module, $hook);
+
+    if (!empty($processors[$library])) {
+      $file = $processors[$library]['file'];
+      module_load_include('inc', $module, $file);
+
+      $processor = new $processors[$library]['class']();
+
+      return $processor;
+    }
+  }
+
+  return FALSE;
+}
